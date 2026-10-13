@@ -3,13 +3,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { getEquipment } from "@/lib/services/equipment";
-import { idSchema } from "@/lib/validations/equipment";
+import { idSchema } from "@/lib/validations/common";
 import {
   ActiveBadge,
   EquipmentStatusBadge,
 } from "@/components/equipment/status-badge";
 import { ActiveToggle } from "@/components/equipment/active-toggle";
 import { formatDateTime, formatHours } from "@/lib/utils/format";
+import { listWorkOrders } from "@/lib/services/work-orders";
+import { isOverdue } from "@/lib/domain/work-orders";
+import { businessToday } from "@/lib/utils/business-time";
+import {
+  OverdueBadge,
+  WorkOrderStatusBadge,
+} from "@/components/work-orders/badges";
 
 export const metadata: Metadata = { title: "Detalle de equipo" };
 
@@ -21,8 +28,12 @@ export default async function EquipmentDetailPage(
   const parsedId = idSchema.safeParse(id);
   if (!parsedId.success) notFound();
 
-  const equipment = await getEquipment(parsedId.data);
+  const [equipment, workOrders] = await Promise.all([
+    getEquipment(parsedId.data),
+    listWorkOrders({ q: "", status: "all", equipment: parsedId.data, mine: false }),
+  ]);
   if (!equipment) notFound();
+  const today = businessToday();
 
   const isAdmin = user.role === "admin";
 
@@ -71,6 +82,37 @@ export default async function EquipmentDetailPage(
           <dd className="font-medium">{formatDateTime(equipment.updated_at)}</dd>
         </div>
       </dl>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-semibold">Órdenes de trabajo</h2>
+          {equipment.is_active ? (
+            <Link
+              href={`/work-orders/new?equipment=${equipment.id}`}
+              className="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50"
+            >
+              Reportar falla
+            </Link>
+          ) : null}
+        </div>
+        {workOrders.length === 0 ? (
+          <p className="text-slate-600">Este equipo no tiene órdenes registradas.</p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {workOrders.map((wo) => (
+              <li key={wo.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <Link href={`/work-orders/${wo.id}`} className="hover:underline">
+                  <span className="font-medium">{wo.work_order_number}</span> · {wo.title}
+                </Link>
+                <span className="flex gap-1">
+                  <WorkOrderStatusBadge status={wo.status} />
+                  {isOverdue(wo, today) ? <OverdueBadge /> : null}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {isAdmin ? (
         <ActiveToggle equipmentId={equipment.id} isActive={equipment.is_active} />

@@ -33,18 +33,99 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"work_order_counters": {
+                  Row: {
+                    "last_value": number,"year": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "last_value": number,"year": number
+                  }
+                  Update: {
+                    "last_value"?: number,"year"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"work_order_status_history": {
+                  Row: {
+                    "changed_at": string,"changed_by": string | null,"id": string,"new_status": Database["public"]['Enums']["work_order_status"],"note": string | null,"previous_status": Database["public"]['Enums']["work_order_status"] | null,"work_order_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "changed_at"?: string,"changed_by"?: string | null,"id"?: string,"new_status": Database["public"]['Enums']["work_order_status"],"note"?: string | null,"previous_status"?: Database["public"]['Enums']["work_order_status"] | null,"work_order_id": string
+                  }
+                  Update: {
+                    "changed_at"?: string,"changed_by"?: string | null,"id"?: string,"new_status"?: Database["public"]['Enums']["work_order_status"],"note"?: string | null,"previous_status"?: Database["public"]['Enums']["work_order_status"] | null,"work_order_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "work_order_status_history_changed_by_fkey"
+      columns: ["changed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_status_history_work_order_id_fkey"
+      columns: ["work_order_id"]
+isOneToOne: false
+      referencedRelation: "work_orders"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"work_orders": {
+                  Row: {
+                    "assigned_technician_id": string | null,"created_at": string,"created_by": string | null,"description": string | null,"equipment_id": string,"failure_cause": string | null,"id": string,"labor_cost": number,"parts_cost": number,"priority": Database["public"]['Enums']["work_order_priority"],"reported_at": string,"resolution_notes": string | null,"resolved_at": string | null,"started_at": string | null,"status": Database["public"]['Enums']["work_order_status"],"target_date": string | null,"title": string,"updated_at": string,"work_order_number": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "assigned_technician_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"equipment_id": string,"failure_cause"?: string | null,"id"?: string,"labor_cost"?: number,"parts_cost"?: number,"priority"?: Database["public"]['Enums']["work_order_priority"],"reported_at"?: string,"resolution_notes"?: string | null,"resolved_at"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["work_order_status"],"target_date"?: string | null,"title": string,"updated_at"?: string,"work_order_number"?: string
+                  }
+                  Update: {
+                    "assigned_technician_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"equipment_id"?: string,"failure_cause"?: string | null,"id"?: string,"labor_cost"?: number,"parts_cost"?: number,"priority"?: Database["public"]['Enums']["work_order_priority"],"reported_at"?: string,"resolution_notes"?: string | null,"resolved_at"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["work_order_status"],"target_date"?: string | null,"title"?: string,"updated_at"?: string,"work_order_number"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "work_orders_assigned_technician_id_fkey"
+      columns: ["assigned_technician_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_orders_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_orders_equipment_id_fkey"
+      columns: ["equipment_id"]
+isOneToOne: false
+      referencedRelation: "equipment"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            "current_app_role":
+            "change_work_order_status":
+{ Args: { "p_new_status": Database["public"]['Enums']["work_order_status"],"p_note"?: string,"p_work_order_id": string }; Returns: undefined
+                           },
+"current_app_role":
 { Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["app_role"]
+                           },
+"is_active_technician":
+{ Args: { "p_profile_id": string }; Returns: boolean
+                           },
+"work_order_transition_allowed":
+{ Args: { "p_from": Database["public"]['Enums']["work_order_status"],"p_to": Database["public"]['Enums']["work_order_status"] }; Returns: boolean
                            }
           }
           Enums: {
-            "app_role": "admin"|"technician","equipment_status": "available"|"rented"|"in_maintenance"|"out_of_service"
+            "app_role": "admin"|"technician","equipment_status": "available"|"rented"|"in_maintenance"|"out_of_service","work_order_priority": "low"|"medium"|"high"|"critical","work_order_status": "new"|"assigned"|"in_progress"|"waiting_parts"|"waiting_authorization"|"resolved"|"cancelled"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -160,7 +241,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "app_role": ["admin", "technician"],"equipment_status": ["available", "rented", "in_maintenance", "out_of_service"]
+            "app_role": ["admin", "technician"],"equipment_status": ["available", "rented", "in_maintenance", "out_of_service"],"work_order_priority": ["low", "medium", "high", "critical"],"work_order_status": ["new", "assigned", "in_progress", "waiting_parts", "waiting_authorization", "resolved", "cancelled"]
           }
         }
 } as const

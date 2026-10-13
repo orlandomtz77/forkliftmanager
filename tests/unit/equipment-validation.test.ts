@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   equipmentFiltersSchema,
   equipmentInputSchema,
-  sanitizeSearch,
 } from "@/lib/validations/equipment";
+import { sanitizeSearch } from "@/lib/validations/common";
 import { uniqueViolationField } from "@/lib/services/db-errors";
 
 const valid = {

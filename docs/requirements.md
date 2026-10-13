@@ -88,6 +88,18 @@ tratamiento de datos faltantes.
 Consecuencia: un técnico puede reportar (crear) una OT, pero no podrá
 actualizarla hasta que un admin se la asigne.
 
+### Supuestos de implementación (Fase 4) — validar con el negocio
+
+- No se pueden crear OT para equipos inactivos.
+- Asignar técnico a una OT `Nueva` la pasa automáticamente a `Asignada`.
+- El técnico asignado edita estado, costos, notas, causa y fechas de trabajo;
+  título, descripción, prioridad, fechas de reporte/objetivo y asignación
+  son solo de admin. El equipo de una OT no se puede cambiar.
+- Los costos se registran en pesos mexicanos (MXN).
+- Una OT resuelta puede seguir actualizando costos y notas (p. ej. facturas
+  tardías), pero no puede cambiar de estado.
+- La nota del cambio de estado es opcional.
+
 ## Requerimientos no funcionales
 
 | ID | Requerimiento |

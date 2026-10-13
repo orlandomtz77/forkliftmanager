@@ -54,10 +54,39 @@ Las server actions de equipos llaman además a `requireRole("admin")` y validan
 la entrada con Zod antes de escribir. La búsqueda de texto se sanea
 (`sanitizeSearch`) porque se usa dentro de un filtro `or` de PostgREST.
 
-### `work_orders`, `work_order_status_history`
+### `work_orders`
 
-Se documentarán al implementarse (Fase 4). Regla confirmada: el técnico solo
-actualiza OT asignadas a él.
+| Operación | Quién |
+|-----------|-------|
+| select | Usuarios autenticados con perfil activo. |
+| insert | Usuarios activos. Solo `admin` puede asignar técnico al crear (trigger). |
+| update | `admin`, o el `technician` asignado (`assigned_technician_id = auth.uid()`). El trigger limita al técnico a estado, costos, notas, causa y fechas de trabajo. |
+| delete | Nadie (las canceladas se conservan). |
+
+Estado, número, creador y fechas iniciales los controla la BD; lo que envíe el
+cliente en esos campos se ignora o se rechaza.
+
+### `work_order_status_history`
+
+| Operación | Quién |
+|-----------|-------|
+| select | Usuarios autenticados con perfil activo. |
+| insert/update/delete | Nadie vía API; lo escribe el trigger `security definer`. |
+
+### `work_order_counters`
+
+Sin grants ni políticas; solo el trigger de inserción la usa.
+
+### Funciones expuestas por RPC
+
+| Función | Ejecuta | Notas |
+|---------|---------|-------|
+| `change_work_order_status` | `authenticated` | `security invoker`: el `update` pasa por RLS y triggers. |
+| `work_order_transition_allowed` | `authenticated` | Pura; sin acceso a datos. |
+| `current_app_role` | `authenticated` | Solo devuelve el rol propio. |
+
+Las funciones de trigger y `is_active_technician` no son ejecutables por
+`anon` ni `authenticated`.
 
 ## Grants
 

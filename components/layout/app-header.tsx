@@ -6,6 +6,7 @@ import type { CurrentUser } from "@/lib/auth/session";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Tablero" },
   { href: "/equipment", label: "Equipos" },
+  { href: "/work-orders", label: "Órdenes de trabajo" },
 ] as const;
 
 export function AppHeader({ user }: { user: CurrentUser }) {

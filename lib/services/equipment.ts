@@ -114,3 +114,17 @@ export async function updateEquipment(
   if (!data) return { ok: false, error: "Equipo no encontrado o sin permiso." };
   return { ok: true, data };
 }
+
+export type EquipmentOption = Pick<Equipment, "id" | "asset_code" | "brand" | "model">;
+
+/** Active equipment, for work-order selects. */
+export async function listActiveEquipmentOptions(): Promise<EquipmentOption[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("equipment")
+    .select("id, asset_code, brand, model")
+    .eq("is_active", true)
+    .order("asset_code");
+  if (error) throw new Error("No se pudo cargar la lista de equipos.", { cause: error });
+  return data;
+}

@@ -4,10 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { AuthorizationError, requireRole } from "@/lib/auth/session";
-import {
-  equipmentInputSchema,
-  idSchema,
-} from "@/lib/validations/equipment";
+import { equipmentInputSchema } from "@/lib/validations/equipment";
+import { idSchema } from "@/lib/validations/common";
 import { createEquipment, updateEquipment } from "@/lib/services/equipment";
 import type { FieldErrors } from "@/lib/services/db-errors";
 

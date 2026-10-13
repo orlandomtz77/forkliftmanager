@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { getEquipment } from "@/lib/services/equipment";
-import { idSchema } from "@/lib/validations/equipment";
+import { idSchema } from "@/lib/validations/common";
 import { EquipmentForm } from "@/components/equipment/equipment-form";
 import { NoPermission } from "@/components/ui/no-permission";
 import { updateEquipmentAction } from "../../actions";

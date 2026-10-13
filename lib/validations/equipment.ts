@@ -1,16 +1,11 @@
 import { z } from "zod";
 import { EQUIPMENT_STATUSES } from "@/lib/domain/equipment";
-
-const requiredText = (label: string, max: number) =>
-  z
-    .string({ error: `Ingresa ${label}.` })
-    .trim()
-    .min(1, { error: `Ingresa ${label}.` })
-    .max(max, { error: `Máximo ${max} caracteres.` });
-
-/** Empty form fields become null. */
-const emptyToNull = (value: unknown) =>
-  typeof value === "string" && value.trim() === "" ? null : value;
+import {
+  emptyToNull,
+  firstValue,
+  requiredText,
+  searchParamSchema,
+} from "@/lib/validations/common";
 
 export const equipmentInputSchema = z.object({
   asset_code: requiredText("el código interno", 40),
@@ -43,26 +38,8 @@ export type EquipmentInput = z.infer<typeof equipmentInputSchema>;
 export const ACTIVE_FILTERS = ["active", "inactive", "all"] as const;
 export type ActiveFilter = (typeof ACTIVE_FILTERS)[number];
 
-/**
- * Search text is used inside a PostgREST `or` filter, so characters with
- * meaning in that syntax (commas, parentheses, wildcards, quotes) are removed.
- */
-export function sanitizeSearch(value: string): string {
-  return value
-    .replace(/[^\p{L}\p{N}\s\-./#]/gu, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 60);
-}
-
-const firstValue = (value: unknown) =>
-  Array.isArray(value) ? value[0] : value;
-
 export const equipmentFiltersSchema = z.object({
-  q: z.preprocess(
-    firstValue,
-    z.string().optional().transform((v) => sanitizeSearch(v ?? "")),
-  ),
+  q: searchParamSchema,
   status: z.preprocess(
     firstValue,
     z.enum(EQUIPMENT_STATUSES).optional().catch(undefined),
@@ -74,5 +51,3 @@ export const equipmentFiltersSchema = z.object({
 });
 
 export type EquipmentFilters = z.infer<typeof equipmentFiltersSchema>;
-
-export const idSchema = z.uuid({ error: "Identificador inválido." });
