@@ -41,10 +41,23 @@ Todas las tablas de `public` tienen RLS habilitado. Sin política = denegado.
 | update | Solo `admin`. |
 | delete | Nadie (cascade desde `auth.users`). |
 
-### `equipment`, `work_orders`, `work_order_status_history`
+### `equipment`
 
-Se documentarán al implementarse (Fases 3–4) siguiendo la matriz de permisos de
-`docs/requirements.md`.
+| Operación | Quién |
+|-----------|-------|
+| select | Usuarios autenticados con perfil activo. |
+| insert | Solo `admin`. |
+| update | Solo `admin` (incluye desactivar/reactivar). |
+| delete | Nadie (se desactiva, no se borra). |
+
+Las server actions de equipos llaman además a `requireRole("admin")` y validan
+la entrada con Zod antes de escribir. La búsqueda de texto se sanea
+(`sanitizeSearch`) porque se usa dentro de un filtro `or` de PostgREST.
+
+### `work_orders`, `work_order_status_history`
+
+Se documentarán al implementarse (Fase 4). Regla confirmada: el técnico solo
+actualiza OT asignadas a él.
 
 ## Grants
 

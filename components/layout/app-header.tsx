@@ -3,7 +3,10 @@ import { signOut } from "@/lib/auth/actions";
 import { APP_ROLE_LABELS } from "@/lib/domain/roles";
 import type { CurrentUser } from "@/lib/auth/session";
 
-const NAV_ITEMS = [{ href: "/dashboard", label: "Tablero" }] as const;
+const NAV_ITEMS = [
+  { href: "/dashboard", label: "Tablero" },
+  { href: "/equipment", label: "Equipos" },
+] as const;
 
 export function AppHeader({ user }: { user: CurrentUser }) {
   return (

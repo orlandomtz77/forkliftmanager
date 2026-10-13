@@ -5,7 +5,21 @@ export type Database = {
   
   "public": {
           Tables: {
-            "profiles": {
+            "equipment": {
+                  Row: {
+                    "asset_code": string,"brand": string,"created_at": string,"hour_meter": number | null,"id": string,"is_active": boolean,"model": string,"operational_status": Database["public"]['Enums']["equipment_status"],"serial_number": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "asset_code": string,"brand": string,"created_at"?: string,"hour_meter"?: number | null,"id"?: string,"is_active"?: boolean,"model": string,"operational_status"?: Database["public"]['Enums']["equipment_status"],"serial_number"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "asset_code"?: string,"brand"?: string,"created_at"?: string,"hour_meter"?: number | null,"id"?: string,"is_active"?: boolean,"model"?: string,"operational_status"?: Database["public"]['Enums']["equipment_status"],"serial_number"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"profiles": {
                   Row: {
                     "created_at": string,"full_name": string | null,"id": string,"is_active": boolean,"role": Database["public"]['Enums']["app_role"],"updated_at": string
                   }
@@ -30,7 +44,7 @@ export type Database = {
                            }
           }
           Enums: {
-            "app_role": "admin"|"technician"
+            "app_role": "admin"|"technician","equipment_status": "available"|"rented"|"in_maintenance"|"out_of_service"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -146,7 +160,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "app_role": ["admin", "technician"]
+            "app_role": ["admin", "technician"],"equipment_status": ["available", "rented", "in_maintenance", "out_of_service"]
           }
         }
 } as const

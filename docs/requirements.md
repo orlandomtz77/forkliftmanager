@@ -1,7 +1,8 @@
 # Requerimientos — Forklift Service Manager (MVP)
 
-Estado: borrador. Los puntos marcados **[POR CONFIRMAR]** son supuestos
-propuestos que el negocio debe validar.
+Estado: borrador. Decisiones de negocio confirmadas el 2026-10-13: estados de
+equipo, matriz de transiciones, formato de número de OT, permisos del técnico
+(solo OT asignadas) y zona horaria `America/Mexico_City`.
 
 ## Requerimientos funcionales
 
@@ -21,19 +22,19 @@ propuestos que el negocio debe validar.
 | ID | Requerimiento | Criterios de aceptación |
 |----|---------------|-------------------------|
 | RF-EQ-01 | Crear equipo con código interno, marca, modelo, serie opcional, horómetro opcional y estado operativo. | Admin crea y consulta el equipo (§12.3). |
-| RF-EQ-02 | Código interno único. | Duplicado rechazado por BD y con mensaje claro (§12.4). |
+| RF-EQ-02 | Código interno único. | Se aplica `trim`; unicidad sin distinguir mayúsculas. Duplicado rechazado por BD y con mensaje claro (§12.4). |
 | RF-EQ-03 | Serie única cuando existe. | Se aplica `trim`; vacío → `NULL`; unicidad sin distinguir mayúsculas. |
 | RF-EQ-04 | Horómetro no negativo. | Valor < 0 rechazado en servidor y BD. |
-| RF-EQ-05 | Buscar y filtrar equipos por texto, estado operativo y activo/inactivo. | Resultados coinciden con el filtro. |
+| RF-EQ-05 | Buscar y filtrar equipos por texto, estado operativo y activo/inactivo. | Texto busca en código, serie, marca y modelo. Por defecto solo activos. |
 | RF-EQ-06 | Desactivar en lugar de borrar. | No existe borrado físico; requiere confirmación en UI. |
-| RF-EQ-07 | Estado operativo explícito. | Valores: Disponible, Rentado, En mantenimiento, Fuera de servicio **[POR CONFIRMAR]**. No se infiere de las OT. |
+| RF-EQ-07 | Estado operativo explícito. | Valores: Disponible, Rentado, En mantenimiento, Fuera de servicio No se infiere de las OT. |
 
 ### Órdenes de trabajo (RF-OT)
 
 | ID | Requerimiento | Criterios de aceptación |
 |----|---------------|-------------------------|
 | RF-OT-01 | Crear OT ligada a un equipo existente. | §12.5; equipo inexistente rechazado (§12.6). |
-| RF-OT-02 | Número de OT legible y único `OT-AAAA-NNNNN`, generado en BD. **[POR CONFIRMAR formato]** | Sin duplicados aun con altas concurrentes. |
+| RF-OT-02 | Número de OT legible y único `OT-AAAA-NNNNN`, generado en BD. | Sin duplicados aun con altas concurrentes. |
 | RF-OT-03 | Campos: título, descripción, fecha de reporte, prioridad, estado, técnico asignado opcional, fecha objetivo, causa de falla, notas de resolución, costos de mano de obra y refacciones. | Persisten y se muestran en el detalle. |
 | RF-OT-04 | Costos no negativos. | §12.7. |
 | RF-OT-05 | `started_at` y `resolved_at` no anteriores a `reported_at`. | §12.7. |
@@ -43,7 +44,7 @@ propuestos que el negocio debe validar.
 | RF-OT-09 | Historial de cambios de estado. | Cada cambio registra estado anterior, nuevo, usuario, fecha y nota opcional. |
 | RF-OT-10 | Buscar y filtrar por equipo, estado, prioridad y rango de fechas. | Resultados coinciden con el filtro. |
 
-#### Matriz de transiciones **[POR CONFIRMAR]**
+#### Matriz de transiciones
 
 | Desde \ Hacia | Asignada | En progreso | Esperando refacciones | Esperando autorización | Resuelta | Cancelada |
 |---|---|---|---|---|---|---|
@@ -64,7 +65,7 @@ Prioridades: Baja, Media, Alta, Crítica.
 | RF-DASH-01 | Total de equipos activos. | Cuenta `is_active = true`. |
 | RF-DASH-02 | Equipos fuera de servicio. | Cuenta activos con estado `out_of_service`. |
 | RF-DASH-03 | OT abiertas (estado distinto de Resuelta y Cancelada). | §12.8. |
-| RF-DASH-04 | OT vencidas: abiertas con fecha objetivo anterior a la fecha de negocio actual. | §12.9. Zona horaria de negocio: `America/Mexico_City` **[POR CONFIRMAR]**. |
+| RF-DASH-04 | OT vencidas: abiertas con fecha objetivo anterior a la fecha de negocio actual. | §12.9. Zona horaria de negocio: `America/Mexico_City`. |
 | RF-DASH-05 | Duración de reparación (`resolved_at − started_at`); provisional para abiertas. | Solo cuando existen marcas de tiempo. |
 | RF-DASH-06 | Costo registrado = mano de obra + refacciones. | §12.10. No se etiqueta como costo total. |
 | RF-DASH-07 | Filtros por periodo, equipo, estado y prioridad. | KPIs recalculados con filtros. |
@@ -72,17 +73,20 @@ Prioridades: Baja, Media, Alta, Crítica.
 Disponibilidad, MTTR y MTBF quedan **fuera** hasta definir fórmula, ventana y
 tratamiento de datos faltantes.
 
-## Permisos **[POR CONFIRMAR]**
+## Permisos
 
 | Acción | admin | technician |
 |--------|:-----:|:----------:|
 | Ver equipos, OT y tablero | ✔ | ✔ |
 | Crear / editar / desactivar equipos | ✔ | ✘ |
 | Crear OT | ✔ | ✔ |
-| Actualizar estado, costos y notas de OT | ✔ | ✔ (todas; alternativa: solo asignadas) |
+| Actualizar estado, costos y notas de OT | ✔ | Solo OT asignadas a él |
 | Asignar técnico | ✔ | ✘ |
 | Gestionar roles | ✔ (vía SQL/Supabase en el MVP) | ✘ |
 | Borrado físico | ✘ | ✘ |
+
+Consecuencia: un técnico puede reportar (crear) una OT, pero no podrá
+actualizarla hasta que un admin se la asigne.
 
 ## Requerimientos no funcionales
 

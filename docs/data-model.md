@@ -34,21 +34,24 @@ work_orders 1─N work_order_status_history N─1 profiles (changed_by)
 
 Se crea automáticamente con un trigger `after insert on auth.users`.
 
-## `equipment` *(pendiente — Fase 3)*
+## `equipment` (Fase 3 — `20261013000002_equipment.sql`)
 
 | Columna | Tipo | Reglas |
 |---------|------|--------|
 | id | uuid PK | |
-| asset_code | text | `not null`, único, `trim`, no vacío |
-| serial_number | text | opcional; vacío → `NULL`; único sin distinguir mayúsculas (índice parcial sobre `lower(serial_number)`) |
-| brand | text | `not null` |
-| model | text | `not null` |
-| hour_meter | numeric(10,1) | opcional, `>= 0` |
+| asset_code | text | `not null`, `trim`, no vacío, máx. 40; único sin distinguir mayúsculas (índice sobre `lower(asset_code)`) |
+| serial_number | text | opcional, máx. 60; vacío → `NULL`; único sin distinguir mayúsculas (índice parcial sobre `lower(serial_number)`) |
+| brand | text | `not null`, `trim`, máx. 60 |
+| model | text | `not null`, `trim`, máx. 60 |
+| hour_meter | numeric(10,1) | opcional, `>= 0`; se redondea a 1 decimal |
 | operational_status | `equipment_status` (`available`, `rented`, `in_maintenance`, `out_of_service`) | `not null`, default `available` |
 | is_active | boolean | default `true` |
 | created_at / updated_at | timestamptz | |
 
 Índices: `operational_status`, `is_active`.
+
+La normalización (`trim`, serie vacía → `NULL`) la hace el trigger
+`normalize_equipment`, así aplica también a llamadas directas a la API.
 
 ## `work_orders` *(pendiente — Fase 4)*
 
@@ -87,3 +90,4 @@ update/delete para usuarios.
 | Serie única case-insensitive con índice parcial | Evita duplicados `ABC123`/`abc123` y permite múltiples `NULL`. |
 | `target_date` como `date` | La regla de vencimiento se evalúa contra la fecha de negocio, no una hora. |
 | Sin `company_id` | Supuesto de una sola empresa (ver project brief). |
+| Código interno único sin distinguir mayúsculas | Evita `MC-01` y `mc-01` como equipos distintos; se conserva lo que escribe el usuario. |
