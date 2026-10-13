@@ -111,3 +111,13 @@ Las funciones de trigger y `is_active_technician` no son ejecutables por
   control de acceso.
 - Pruebas destructivas solo contra Supabase local.
 - Revisar los *advisors* de seguridad de Supabase antes de cada despliegue.
+
+## Revisión de advisors (`forklift-dev`, 2026-10-13)
+
+| Aviso | Nivel | Decisión |
+|---|---|---|
+| `work_order_counters` con RLS y sin políticas | INFO | Intencional: solo el trigger `security definer` la escribe; nadie la lee por API. |
+| `current_app_role()` ejecutable por `authenticated` (security definer) | WARN | Aceptado: las políticas RLS la necesitan; solo devuelve el rol del propio usuario. |
+
+Pendiente manual: desactivar el registro público en Auth del proyecto remoto
+(ver README → Despliegue). Hasta hacerlo, el entorno no debe compartirse.

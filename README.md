@@ -62,13 +62,32 @@ npm run build
 
 Las pruebas de integración se niegan a correr si la URL no es local.
 
-## Despliegue (pendiente)
+## Despliegue
 
-1. Crear proyecto Supabase de desarrollo/preview (y otro de producción).
-2. Aplicar migraciones verificando el destino: `npx supabase link` + `npx supabase db push`.
-3. Configurar en Supabase *Site URL* y *Redirect URLs*; deshabilitar signup.
-4. Configurar variables por entorno en Vercel (Preview y Production por separado).
-5. Probar el preview antes de promover a producción.
+Estado al 2026-10-13: entorno de **desarrollo/preview** creado, sin datos reales.
+
+| Recurso | Valor |
+|---|---|
+| Supabase | proyecto `forklift-dev` (ref `yxwiehuautffdqowndzo`, us-east-2) |
+| Vercel | proyecto `forklift-service-manager`, ligado a `orlandomtz77/forkliftmanager` (rama de producción `main`) |
+| Variables (Preview y Production) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` de `forklift-dev` |
+
+Las migraciones de `supabase/migrations/` se aplicaron en orden a `forklift-dev`.
+El `seed.sql` **no** se aplica en remoto.
+
+Pasos manuales en el panel de Supabase (`forklift-dev`):
+
+1. *Authentication → Sign In / Providers*: desactivar **Allow new users to sign up**.
+   Sin esto cualquiera podría registrarse y leer datos como técnico.
+2. *Authentication → URL Configuration*: *Site URL* = URL de Vercel; agregar
+   `https://*-orlandomtzgarcia-gmailcoms-projects.vercel.app/**` a *Redirect URLs*.
+3. *Authentication → Users → Add user*: crear tu usuario (correo y contraseña).
+4. Promoverlo a admin en *SQL Editor*:
+   `update public.profiles set role = 'admin' where id = (select id from auth.users where email = 'TU_CORREO');`
+
+Antes de usar datos reales: crear un proyecto Supabase de **producción** separado,
+aplicar las migraciones verificando el destino, apuntar las variables de
+*Production* en Vercel a ese proyecto y probar el preview antes de promover.
 
 ## Estructura
 
