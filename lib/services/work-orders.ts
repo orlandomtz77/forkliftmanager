@@ -39,6 +39,36 @@ const DETAIL_COLUMNS = `
   creator:profiles!work_orders_created_by_fkey (id, full_name)
 `;
 
+/** Filters shared by the work-order list and the dashboard. */
+export type WorkOrderQueryFilters = Pick<
+  WorkOrderFilters,
+  "status" | "priority" | "equipment" | "from" | "to"
+>;
+
+interface FilterableQuery<Self> {
+  eq(column: "status" | "priority" | "equipment_id", value: string): Self;
+  not(column: "status", operator: "in", value: string): Self;
+  gte(column: "reported_at", value: string): Self;
+  lt(column: "reported_at", value: string): Self;
+}
+
+export function applyWorkOrderFilters<Q extends FilterableQuery<Q>>(
+  query: Q,
+  filters: WorkOrderQueryFilters,
+): Q {
+  let result = query;
+  if (filters.status === "open") {
+    result = result.not("status", "in", `(${CLOSED_STATUSES.join(",")})`);
+  } else if (filters.status !== "all") {
+    result = result.eq("status", filters.status);
+  }
+  if (filters.priority) result = result.eq("priority", filters.priority);
+  if (filters.equipment) result = result.eq("equipment_id", filters.equipment);
+  if (filters.from) result = result.gte("reported_at", businessDayStart(filters.from));
+  if (filters.to) result = result.lt("reported_at", businessDayEnd(filters.to));
+  return result;
+}
+
 export async function listWorkOrders(
   filters: WorkOrderFilters & { assignedTo?: string },
 ) {
@@ -49,18 +79,10 @@ export async function listWorkOrders(
     .order("reported_at", { ascending: false })
     .limit(LIST_LIMIT);
 
-  if (filters.status === "open") {
-    query = query.not("status", "in", `(${CLOSED_STATUSES.join(",")})`);
-  } else if (filters.status !== "all") {
-    query = query.eq("status", filters.status);
-  }
-  if (filters.priority) query = query.eq("priority", filters.priority);
-  if (filters.equipment) query = query.eq("equipment_id", filters.equipment);
+  query = applyWorkOrderFilters(query, filters);
   if (filters.assignedTo) {
     query = query.eq("assigned_technician_id", filters.assignedTo);
   }
-  if (filters.from) query = query.gte("reported_at", businessDayStart(filters.from));
-  if (filters.to) query = query.lt("reported_at", businessDayEnd(filters.to));
   if (filters.q) {
     // filters.q is sanitized by searchParamSchema (no PostgREST syntax).
     const pattern = `%${filters.q}%`;

@@ -17,7 +17,7 @@ test("admin creates, edits, searches and deactivates equipment", async ({
   const code = `E2E-${Date.now()}`;
   await signIn(page, "admin@example.test");
 
-  await page.getByRole("link", { name: "Equipos" }).click();
+  await page.getByRole("link", { name: "Equipos", exact: true }).click();
   await page.getByRole("link", { name: "Nuevo equipo" }).click();
 
   await page.getByLabel("Código interno").fill(code);

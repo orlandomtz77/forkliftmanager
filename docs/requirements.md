@@ -73,6 +73,23 @@ Prioridades: Baja, Media, Alta, Crítica.
 Disponibilidad, MTTR y MTBF quedan **fuera** hasta definir fórmula, ventana y
 tratamiento de datos faltantes.
 
+#### Supuestos de implementación (Fase 5) — validar con el negocio
+
+- Los indicadores de flota (activos, fuera de servicio, en mantenimiento)
+  reflejan el estado actual de los equipos activos y **no** dependen de los
+  filtros.
+- El filtro de periodo aplica a la fecha de reporte de la OT (igual que el
+  listado). Por defecto el tablero considera todas las OT y todos los estados.
+- Duración de reparación: promedio y máxima de las OT resueltas con inicio y
+  resolución; las OT abiertas ya iniciadas se muestran aparte como tiempo
+  provisional. Las resueltas sin fecha de inicio se excluyen y se reportan.
+- El costo registrado suma mano de obra + refacciones de todas las OT
+  filtradas, incluidas las canceladas (pueden tener diagnóstico cobrado). Se
+  calcula en centavos para evitar errores de redondeo.
+- Los KPI se calculan en servidor a partir de los registros
+  (`lib/domain/kpis.ts`), sin totales almacenados. Se leen como máximo 20 000
+  OT por consulta; si se supera, el tablero lo avisa y pide acotar el periodo.
+
 ## Permisos
 
 | Acción | admin | technician |
